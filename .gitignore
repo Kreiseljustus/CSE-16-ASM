@@ -7,7 +7,7 @@
 *.vcxproj
 *.vcxproj.user
 CSE-16-ASM.exe
-Binaries
+/Binaries
 *.asm
 
 # Compiled Object files
