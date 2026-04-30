@@ -17,6 +17,7 @@ std::unordered_map<std::string, uint8_t> opcodes = {
     {"OUT",   0x09},
     {"STORE", 0x0A},
     {"LDMEM", 0x0B},
+    {"JMP", 0x0C},
     {"HLT",   0xFF}
 };
 
