@@ -31,7 +31,7 @@ std::unordered_map<std::string, uint8_t> opcodes = {
 };
 
 std::unordered_map<std::string, uint16_t> registers = {
-    {"A", 0}, {"B", 1}, {"C", 2}, {"D", 3}
+    {"A", 0}, {"B", 1}, {"C", 2}, {"D", 3}, {"SP", 4}, {"BP", 5 }
 };
 
 int main(int argc, char* argv[])
