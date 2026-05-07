@@ -27,6 +27,15 @@ std::unordered_map<std::string, uint8_t> opcodes = {
     {"DEC", 0x13},
     {"SHL", 0x14},
     {"SHR", 0x15},
+    {"NOT", 0x16},
+    {"XOR", 0x17},
+    {"OR", 0x18}, 
+    {"AND", 0x19},
+    {"CMP", 0x1A},
+    {"JLT", 0x1B},
+    {"JGT", 0x1C},
+    {"CALL", 0x1D},
+    {"RET", 0x1E},
     {"HLT",   0xFF}
 };
 
