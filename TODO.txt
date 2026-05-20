@@ -1,0 +1,21 @@
+.o Format
+
+[5 bytes]  "CSE08" / "CSE16"
+[2 bytes] VERSION
+[4 bytes]  code size
+[N bytes]  code
+
+[4 bytes]  symbol count
+per symbol:
+    [4 bytes]  offset
+    [1 byte]   global flag
+    [1 byte]   name length
+    [N bytes]  name
+
+[4 bytes]  relocation count
+per relocation:
+    [4 bytes]  offset in code
+    [1 byte]   name length
+    [N bytes]  symbol name
+
+Linker

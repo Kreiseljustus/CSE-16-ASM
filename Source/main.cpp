@@ -1,9 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <unordered_set>
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <cstdint>
+#include <stdexcept>
+
+#include "ObjectFile.h"
 
 std::unordered_map<std::string, uint8_t> opcodes = {
     {"LD",    0x01},
@@ -60,6 +65,9 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    ObjectFile outputOBJ = ObjectFile();
+    std::unordered_set<std::string> globalLabelNames;
+
     std::vector<std::string> lines;
     std::string line;
     while (std::getline(file, line)) {
@@ -68,22 +76,35 @@ int main(int argc, char* argv[])
         lines.push_back(line);
     }
 
-    // first pass — collect labels
-    // every instruction is exactly 5 bytes, labels resolve to byte offsets
+    //Get label addresses
+    
     std::unordered_map<std::string, uint16_t> labels;
     uint16_t pc = 0;
+    int lineIndex = 0;
     for (auto& l : lines) {
+        lineIndex++;
         std::stringstream ss(l);
         std::string word;
         ss >> word;
         if (word.empty()) continue;
-        if (word.back() == ':') {
-            labels[word.substr(0, word.size() - 1)] = pc;
+        if (word == "global") {
+            std::string globalLabelName;
+            if (!(ss >> globalLabelName)) {
+                std::cout << "ERROR: Missing label name after 'global' keyword on line " << lineIndex - 1 << std::endl;
+                continue;
+            }
+            //Resolves to symbol in second pass
+            globalLabelNames.insert(globalLabelName);
+            continue;
         }
-        else {
-            if (opcodes.find(word) != opcodes.end())
-                pc += 5;
-        }
+        
+		if (word.back() == ':') {
+			labels[word.substr(0, word.size() - 1)] = pc;
+		}
+		else {
+			if (opcodes.find(word) != opcodes.end())
+				pc += 5;
+		}
     }
 
     // helper to emit a 16-bit little-endian value
@@ -93,17 +114,29 @@ int main(int argc, char* argv[])
         program.push_back((value >> 8) & 0xFF);
         };
 
-    // magic header — 0xFE 0x10 identifies this as a CSE16 binary
-    program.push_back(0xFE);
-    program.push_back(0x10);
+    pc = 0;
 
-    // second pass — emit instructions
+    //produce bytecode
     for (auto& l : lines) {
         std::stringstream ss(l);
         std::string word;
         ss >> word;
         if (word.empty()) continue;
-        if (word.back() == ':') continue;
+        if (word == "global") continue;
+        if (word.back() == ':') {
+            std::string labelName = word.substr(0, word.size() - 1);
+
+            bool global = false;
+
+            if (globalLabelNames.contains(labelName)) {
+                global = true;
+            }
+            
+            Symbol s = Symbol(labelName, pc, global);
+            outputOBJ.addSymbol(s);
+
+            continue;
+        }
 
         auto it = opcodes.find(word);
         if (it == opcodes.end()) {
@@ -123,15 +156,30 @@ int main(int argc, char* argv[])
             else if (labels.find(arg) != labels.end())
                 value = labels[arg];
             else
-                value = static_cast<uint16_t>(std::stoi(arg, nullptr, 0));
+				try {
+                    //immidiate value
+					value = static_cast<uint16_t>(std::stoi(arg, nullptr, 0));
+				}
+			    catch (std::invalid_argument&) {
+				    //Unknown label cause not a number
+				    value = 0x0000;
+
+                    uint8_t offset;
+                    if (args.size() == 0) offset = pc + 1;
+                    if (args.size() == 1) offset = pc + 3;
+
+                    Relocation r = Relocation{ offset, arg};
+                    outputOBJ.addRelocation(r);
+			    }
 
             std::cout << "arg: " << arg << " = 0x" << std::hex << value << std::endl;
             args.push_back(value);
         }
 
-        // always emit exactly 2 args, pad with 0 if missing
         emit16(args.size() > 0 ? args[0] : 0);
         emit16(args.size() > 1 ? args[1] : 0);
+
+        pc += 5;
     }
 
     if (program.size() <= 2) {
@@ -139,9 +187,10 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    std::ofstream out(outputFile, std::ios::binary);
-    out.write(reinterpret_cast<const char*>(program.data()), program.size());
     std::cout << "Assembled " << (program.size() - 2) << " bytes." << std::endl;
+
+    outputOBJ.setCode(program);
+    outputOBJ.writeFile("test.o", true);
 
     return 0;
 }
