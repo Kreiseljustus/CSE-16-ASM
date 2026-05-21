@@ -34,6 +34,7 @@ public:
 	void setCode(std::vector<uint8_t>& code) { this->code = code; }
 
 	bool writeFile(std::string_view path, bool is16Bit);
+	bool parseFile(std::string_view path, bool* is16Bit);
 private:
 	//Complete assembled code
 	//Unknown symbol locations are 0x0000
