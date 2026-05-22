@@ -35,5 +35,6 @@ std::unordered_map<std::string, uint8_t> opcodes = {
     {"JGT", 0x1C},
     {"CALL", 0x1D},
     {"RET", 0x1E},
+    {"LDB", 0x1F},
     {"HLT",   0xFF}
 };

@@ -149,8 +149,8 @@ std::vector<std::string> Assembler::assemble(std::string_view path) {
             uint16_t value;
             if (registers.find(arg) != registers.end())
                 value = registers[arg];
-            else if (labels.find(arg) != labels.end())
-                value = labels[arg];
+            /*else if (labels.find(arg) != labels.end())
+                value = labels[arg];*/
             else
                 try {
                     //immidiate value
@@ -183,7 +183,7 @@ std::vector<std::string> Assembler::assemble(std::string_view path) {
         return objectFilePaths;
     }
 
-    std::cout << "Assembled " << (program.size() - 2) << " bytes from " << path  << std::endl;
+    std::cout << "Assembled " << (program.size()) << " bytes from " << path  << std::endl;
 
     outputOBJ.setCode(program);
     size_t dotPos = path.find_last_of('.');

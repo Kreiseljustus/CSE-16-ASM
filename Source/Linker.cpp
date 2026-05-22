@@ -24,6 +24,8 @@ void Linker::calculateBaseAddresses() {
 	for (int i = 0; i < objectFiles.size(); i++) {
 		ObjectFile& o = objectFiles.at(i);
 
+		std::cout << "Code size for current object file: " << o.getCode().size() << std::endl;
+
 		uint16_t additionalOffset = 0;
 
 		//Loop through each object file before this one
@@ -33,7 +35,7 @@ void Linker::calculateBaseAddresses() {
 		}
 
 		for (Symbol& s : o.getSymbols()) {
-			//5 Bytes for jmp to main instruction at the start of the finished executable
+			std::cout << "Offset for " << s.name << " : " << s.offset + additionalOffset << std::endl;
 			s.offset += additionalOffset;
 		}
 	}
@@ -47,10 +49,13 @@ void Linker::resolveRelocations() {
 			bool found = false;
 			for (ObjectFile& other : objectFiles) {
 				for (Symbol s : other.getSymbols()) {
-					if (s.name == name && s.global) {
-						o.getCode()[codeOffset] = (s.offset + 5) & 0xFF;
-						o.getCode()[codeOffset + 1] = ((s.offset + 5) >> 8) & 0xFF;
-						found = true;
+					if (s.name == name) {
+						bool sameFile = &o == &other;
+						if (sameFile || s.global) {
+							o.getCode()[codeOffset] = (s.offset + 5) & 0xFF;
+							o.getCode()[codeOffset + 1] = ((s.offset + 5) >> 8) & 0xFF;
+							found = true;
+						}
 					}
 				}
 			}
