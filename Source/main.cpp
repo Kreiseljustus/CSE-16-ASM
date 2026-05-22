@@ -4,6 +4,8 @@
 #include "Assembler.h"
 #include "ObjectFile.h"
 
+#include "Linker.h"
+
 int main(int argc, char* argv[])
 {
     std::string inputFile, outputFile;
@@ -17,10 +19,6 @@ int main(int argc, char* argv[])
 
     Assembler a = Assembler();
     a.assemble(inputFile);
-
-    ObjectFile test = ObjectFile();
-    bool bit;
-    test.parseFile("test.o", &bit);
 
     return 0;
 }

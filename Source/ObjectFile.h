@@ -10,7 +10,7 @@
 //What symbols this file offers
 struct Symbol {
 	std::string name;
-	uint16_t offset;
+	uint32_t offset;
 	bool global = false;
 };
 
@@ -19,7 +19,7 @@ struct Symbol {
 
 //Symbols this file is missing / are unknown
 struct Relocation {
-	uint16_t offset;
+	uint32_t offset;
 	std::string symbol;
 };
 
@@ -35,6 +35,10 @@ public:
 
 	bool writeFile(std::string_view path, bool is16Bit);
 	bool parseFile(std::string_view path, bool* is16Bit);
+
+	std::vector<Symbol>& getSymbols() { return symbols; }
+	std::vector<uint8_t>& getCode() { return code; }
+	std::vector<Relocation>& getRelocations() { return relocations; }
 private:
 	//Complete assembled code
 	//Unknown symbol locations are 0x0000

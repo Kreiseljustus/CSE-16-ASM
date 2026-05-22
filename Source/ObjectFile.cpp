@@ -48,6 +48,8 @@ bool ObjectFile::writeFile(std::string_view path, bool is16Bit) {
         file.write(reinterpret_cast<const char*>(&symbolNameLength), 1);
         file.write(reinterpret_cast<const char*>(relocation.symbol.c_str()), relocation.symbol.length());
     }
+
+    file.close();
     
     return true;
 }
@@ -105,9 +107,12 @@ bool ObjectFile::parseFile(std::string_view path, bool* is16Bit) {
             char* name = new char[nameLength];
             file.read(name, nameLength);
 
-            std::string sName(name);
+            std::string sName(name, nameLength);
 
             Symbol s = Symbol(sName, (uint16_t)offset, global);
+
+            std::cout << "symbol name " << sName << " with offset " << offset << " is global: " << global << std::endl;
+
             symbols.push_back(s);
         }
 
@@ -122,11 +127,16 @@ bool ObjectFile::parseFile(std::string_view path, bool* is16Bit) {
             char* name = new char[nameLength];
             file.read(name, nameLength);
 
-            std::string sName(name);
+            std::string sName(name, nameLength);
 
-            Relocation r = Relocation(offset, name);
+            Relocation r = Relocation(offset, sName);
+
+            std::cout << "relocation name " << sName << " with offset " << offset << std::endl;;
+
             relocations.push_back(r);
         }
+
+        file.close();
 
         return true;
     }

@@ -110,8 +110,8 @@ void Assembler::assemble(std::string_view path) {
             uint16_t value;
             if (registers.find(arg) != registers.end())
                 value = registers[arg];
-            else if (labels.find(arg) != labels.end())
-                value = labels[arg];
+            /*else if (labels.find(arg) != labels.end())
+                value = labels[arg];*/
             else
                 try {
                     //immidiate value
@@ -144,7 +144,7 @@ void Assembler::assemble(std::string_view path) {
         return;
     }
 
-    std::cout << "Assembled " << (program.size() - 2) << " bytes." << std::endl;
+    std::cout << "Assembled " << (program.size() - 2) << " bytes from " << path  << std::endl;
 
     outputOBJ.setCode(program);
     outputOBJ.writeFile("test.o", true);
