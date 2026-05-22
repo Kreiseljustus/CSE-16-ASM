@@ -2,10 +2,12 @@
 
 #include <string>
 #include <string_view>
+#include <unordered_set>
+#include <vector>
 
 class Assembler {
 public:
-	void assemble(std::string_view path);
+	std::vector<std::string> assemble(std::string_view path);
 private:
-
+	std::unordered_set<std::string> assembledFiles;
 };

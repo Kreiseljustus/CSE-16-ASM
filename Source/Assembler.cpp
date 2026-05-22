@@ -15,11 +15,14 @@
 #include <cstdint>
 #include <stdexcept>
 
-void Assembler::assemble(std::string_view path) {
+std::vector<std::string> Assembler::assemble(std::string_view path) {
+
+    std::vector<std::string> objectFilePaths;
+
     std::ifstream file(path.data());
     if (!file.is_open()) {
         std::cerr << "Could not open input file: " << path << std::endl;
-        return;
+        return objectFilePaths;
     }
 
     ObjectFile outputOBJ = ObjectFile();
@@ -44,6 +47,18 @@ void Assembler::assemble(std::string_view path) {
         std::string word;
         ss >> word;
         if (word.empty()) continue;
+        if (word == "include") {
+            std::string filename;
+            //example: stdlib.asm
+            ss >> filename;
+            if (assembledFiles.contains(filename)) continue;
+            assembledFiles.insert(filename);
+
+            std::vector<std::string> subObj = assemble(filename);
+            objectFilePaths.insert(objectFilePaths.end(), subObj.begin(), subObj.end());
+            
+            continue;
+        }
         if (word == "global") {
             std::string globalLabelName;
             if (!(ss >> globalLabelName)) {
@@ -80,6 +95,7 @@ void Assembler::assemble(std::string_view path) {
         ss >> word;
         if (word.empty()) continue;
         if (word == "global") continue;
+        if (word == "include") continue;
         if (word.back() == ':') {
             std::string labelName = word.substr(0, word.size() - 1);
 
@@ -141,11 +157,17 @@ void Assembler::assemble(std::string_view path) {
 
     if (program.size() <= 2) {
         std::cerr << "No instructions assembled!" << std::endl;
-        return;
+        return objectFilePaths;
     }
 
     std::cout << "Assembled " << (program.size() - 2) << " bytes from " << path  << std::endl;
 
     outputOBJ.setCode(program);
-    outputOBJ.writeFile("test.o", true);
+    size_t dotPos = path.find_last_of('.');
+    std::string outputPath = std::string(path.substr(0, dotPos)) + ".o";
+    outputOBJ.writeFile(outputPath, true);
+
+    objectFilePaths.push_back(outputPath);
+
+    return objectFilePaths;
 }

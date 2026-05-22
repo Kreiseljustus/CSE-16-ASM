@@ -5,9 +5,9 @@
 #include "ObjectFile.h"
 
 #include "Linker.h"
+#include <vector>
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     std::string inputFile, outputFile;
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
@@ -18,7 +18,14 @@ int main(int argc, char* argv[])
     if (outputFile.empty()) outputFile = "program.bin";
 
     Assembler a = Assembler();
-    a.assemble(inputFile);
+    std::vector<std::string> oFiles = a.assemble(inputFile);
+
+    Linker linker;
+    for (std::string s : oFiles) {
+        linker.addObjectFile(s);
+    }
+
+    linker.link(outputFile);
 
     return 0;
 }
