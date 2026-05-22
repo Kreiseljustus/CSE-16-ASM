@@ -8,7 +8,7 @@
 *.vcxproj.user
 CSE-16-ASM.exe
 /Binaries
-*.asm
+
 
 # Compiled Object files
 *.slo

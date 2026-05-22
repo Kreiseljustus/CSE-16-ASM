@@ -70,6 +70,18 @@ std::vector<std::string> Assembler::assemble(std::string_view path) {
             continue;
         }
 
+        if (word == "db") {
+            std::string arg;
+            size_t amountOfArgs = 0;
+            while (ss >> arg) {
+                amountOfArgs++;
+            }
+
+            pc += amountOfArgs;
+
+            continue;
+        }
+
         if (word.back() == ':') {
             labels[word.substr(0, word.size() - 1)] = pc;
         }
@@ -96,6 +108,17 @@ std::vector<std::string> Assembler::assemble(std::string_view path) {
         if (word.empty()) continue;
         if (word == "global") continue;
         if (word == "include") continue;
+        if (word == "db") {
+            std::string arg;
+            size_t amountOfArgs = 0;
+            while (ss >> arg) {
+                amountOfArgs++;
+                program.push_back(static_cast<uint8_t>(std::stoi(arg, nullptr, 0)));
+            }
+
+            pc += amountOfArgs;
+            continue;
+        }
         if (word.back() == ':') {
             std::string labelName = word.substr(0, word.size() - 1);
 
@@ -126,8 +149,8 @@ std::vector<std::string> Assembler::assemble(std::string_view path) {
             uint16_t value;
             if (registers.find(arg) != registers.end())
                 value = registers[arg];
-            /*else if (labels.find(arg) != labels.end())
-                value = labels[arg];*/
+            else if (labels.find(arg) != labels.end())
+                value = labels[arg];
             else
                 try {
                     //immidiate value
