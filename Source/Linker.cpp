@@ -47,7 +47,7 @@ void Linker::resolveRelocations() {
 			bool found = false;
 			for (ObjectFile& other : objectFiles) {
 				for (Symbol s : other.getSymbols()) {
-					if (s.name == name) {
+					if (s.name == name && s.global) {
 						o.getCode()[codeOffset] = (s.offset + 5) & 0xFF;
 						o.getCode()[codeOffset + 1] = ((s.offset + 5) >> 8) & 0xFF;
 						found = true;
