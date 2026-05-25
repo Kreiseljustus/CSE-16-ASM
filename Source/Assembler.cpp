@@ -51,10 +51,22 @@ std::vector<std::string> Assembler::assemble(std::string_view path) {
             std::string filename;
             //example: stdlib.asm
             ss >> filename;
-            if (assembledFiles.contains(filename)) continue;
-            assembledFiles.insert(filename);
 
-            std::vector<std::string> subObj = assemble(filename);
+            std::string resolvedPath = filename;
+            if (!std::ifstream(filename).is_open()) {
+                for (auto& p : includePaths) {
+                    std::string candidate = p + "/" + filename;
+                    if (std::ifstream(candidate).is_open()) {
+                        resolvedPath = candidate;
+                        break;
+                    }
+                }
+            }
+
+            if (assembledFiles.contains(resolvedPath)) continue;
+            assembledFiles.insert(resolvedPath);
+
+            std::vector<std::string> subObj = assemble(resolvedPath);
             objectFilePaths.insert(objectFilePaths.end(), subObj.begin(), subObj.end());
             
             continue;
